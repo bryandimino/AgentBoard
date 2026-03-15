@@ -1,0 +1,224 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Agent Board - Operational Control Center</title>
+    <link rel="stylesheet" href="static/css/board.css">
+    <link rel="stylesheet" href="static/css/cards.css">
+</head>
+<body>
+    <!-- Header -->
+    <header class="board-header">
+        <div class="header-container">
+            <h1>📋 Agent Board</h1>
+            <div class="header-stats">
+                <span id="stats-total">Total: 0</span>
+                <span id="stats-ready">Ready: 0</span>
+                <span id="stats-in-progress">In Progress: 0</span>
+                <button id="btn-refresh" class="btn btn-small">⟳ Refresh</button>
+            </div>
+        </div>
+    </header>
+
+    <!-- Board Container -->
+    <main class="board-container">
+        <div class="board-columns">
+            <!-- Backlog Column -->
+            <section class="column" data-status="BACKLOG">
+                <h2 class="column-title">
+                    📥 BACKLOG
+                    <span class="card-count badge">0</span>
+                </h2>
+                <div class="column-cards" id="column-backlog"></div>
+                <button class="btn btn-small btn-add-card" data-status="BACKLOG">+ New Card</button>
+            </section>
+
+            <!-- Ready Column -->
+            <section class="column column-priority-high" data-status="READY">
+                <h2 class="column-title">
+                    ⚡ READY
+                    <span class="card-count badge badge-warning">0</span>
+                </h2>
+                <div class="column-cards" id="column-ready"></div>
+                <button class="btn btn-small btn-add-card" data-status="READY">+ New Card</button>
+            </section>
+
+            <!-- In Progress Column -->
+            <section class="column column-priority-critical" data-status="IN_PROGRESS">
+                <h2 class="column-title">
+                    🚀 IN PROGRESS
+                    <span class="card-count badge badge-success">0</span>
+                </h2>
+                <div class="column-cards" id="column-in-progress"></div>
+                <button class="btn btn-small btn-add-card" data-status="IN_PROGRESS">+ New Card</button>
+            </section>
+
+            <!-- Review Column -->
+            <section class="column column-priority-medium" data-status="REVIEW">
+                <h2 class="column-title">
+                    👀 REVIEW
+                    <span class="card-count badge badge-info">0</span>
+                </h2>
+                <div class="column-cards" id="column-review"></div>
+                <button class="btn btn-small btn-add-card" data-status="REVIEW">+ New Card</button>
+            </section>
+
+            <!-- Blocked Column -->
+            <section class="column column-priority-low" data-status="BLOCKED">
+                <h2 class="column-title">
+                    🚧 BLOCKED
+                    <span class="card-count badge badge-danger">0</span>
+                </h2>
+                <div class="column-cards" id="column-blocked"></div>
+                <button class="btn btn-small btn-add-card" data-status="BLOCKED">+ New Card</button>
+            </section>
+
+            <!-- Done Column -->
+            <section class="column column-priority-low" data-status="DONE">
+                <h2 class="column-title">
+                    ✅ DONE
+                    <span class="card-count badge badge-primary">0</span>
+                </h2>
+                <div class="column-cards" id="column-done"></div>
+            </section>
+        </div>
+
+        <!-- Board Stats Summary -->
+        <aside class="board-sidebar">
+            <div class="sidebar-section">
+                <h3>Board Statistics</h3>
+                <div class="stats-grid">
+                    <div class="stat-card stat-total">
+                        <span class="stat-label">Total Cards</span>
+                        <span class="stat-value" id="sidebar-total">0</span>
+                    </div>
+                    <div class="stat-card stat-ready">
+                        <span class="stat-label">Ready</span>
+                        <span class="stat-value" id="sidebar-ready">0</span>
+                    </div>
+                    <div class="stat-card stat-in-progress">
+                        <span class="stat-label">In Progress</span>
+                        <span class="stat-value" id="sidebar-in-progress">0</span>
+                    </div>
+                    <div class="stat-card stat-done">
+                        <span class="stat-label">Completed</span>
+                        <span class="stat-value" id="sidebar-done">0</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Supervisor Actions -->
+            <div class="sidebar-section">
+                <h3>Supervisor Control</h3>
+                <button id="btn-supervisor-run" class="btn btn-primary btn-block">
+                    ▶ Run Supervisor Loop
+                </button>
+                <p class="supervisor-hint">Triggers the supervisor to inspect board and assign work</p>
+            </div>
+
+            <!-- System Status -->
+            <div class="sidebar-section">
+                <h3>System Status</h3>
+                <div id="system-status" class="status-indicator status-success">
+                    ● API Connected
+                </div>
+                <small id="last-update" style="color: #666; margin-top: 8px; display: block;">Last update: --</small>
+            </div>
+        </aside>
+    </main>
+
+    <!-- Card Creation/Edit Modal -->
+    <div class="modal hidden" id="card-modal">
+        <div class="modal-backdrop"></div>
+        <div class="modal-dialog card-form-container">
+            <div class="modal-content">
+                <h2 id="modal-title">Create New Card</h2>
+                <form id="card-form" onsubmit="handleCardSubmit(event)">
+                    <input type="hidden" id="card-id">
+                    
+                    <div class="form-group">
+                        <label for="card-title">Title *</label>
+                        <input type="text" id="card-title" required placeholder="What needs to be done?" minlength="1" maxlength="200">
+                    </div>
+
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label for="card-type">Type</label>
+                            <select id="card-type">
+                                <option value="task">Task</option>
+                                <option value="feature">Feature</option>
+                                <option value="bug">Bug</option>
+                                <option value="investigation">Investigation</option>
+                            </select>
+                        </div>
+
+                        <div class="form-group">
+                            <label for="card-priority">Priority</label>
+                            <select id="card-priority">
+                                <option value="0">Critical (P0)</option>
+                                <option value="1" selected>High (P1)</option>
+                                <option value="2">Medium (P2)</option>
+                                <option value="3">Low (P3)</option>
+                            </select>
+                        </div>
+                    </div>
+
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label for="card-owner">Owner</label>
+                            <input type="text" id="card-owner" placeholder="Agent ID or person name">
+                        </div>
+
+                        <div class="form-group">
+                            <label for="card-status">Status</label>
+                            <select id="card-status">
+                                <option value="BACKLOG">Backlog</option>
+                                <option value="READY" selected>Ready</option>
+                                <option value="IN_PROGRESS">In Progress</option>
+                                <option value="BLOCKED">Blocked</option>
+                                <option value="REVIEW">Review</option>
+                                <option value="DONE">Done</option>
+                            </select>
+                        </div>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="card-role">Role</label>
+                        <input type="text" id="card-role" placeholder="Primary coder, reviewer, etc.">
+                    </div>
+
+                    <div class="form-group">
+                        <label for="card-acceptance">Acceptance Criteria *</label>
+                        <textarea id="card-acceptance" required placeholder="List the acceptance criteria for this work..." rows="4" minlength="1"></textarea>
+                        <small class="field-hint">Markdown supported. Define what "done" looks like.</small>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="card-next-step">Next Step</label>
+                        <textarea id="card-next-step" placeholder="What should be done next? (optional)" rows="2"></textarea>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="card-blockers">Blockers</label>
+                        <textarea id="card-blockers" placeholder="What's blocking progress? (optional)" rows="2"></textarea>
+                    </div>
+
+                    <div class="form-actions">
+                        <button type="submit" class="btn btn-primary">Save Card</button>
+                        <button type="button" class="btn btn-secondary" onclick="closeModal('card-modal')">Cancel</button>
+                        <button type="button" id="btn-delete-card" class="btn btn-danger hidden">Delete Card</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <!-- Notification Toast -->
+    <div class="toast-container" id="toast-container"></div>
+
+    <!-- Scripts -->
+    <script src="static/js/api.js"></script>
+    <script src="static/js/app.js"></script>
+</body>
+</html>
