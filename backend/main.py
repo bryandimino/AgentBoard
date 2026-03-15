@@ -26,13 +26,13 @@ engine = create_engine(DATABASE_URL, connect_args={"check_same_thread": False})
 async def lifespan(app: FastAPI):
     """Lifespan context manager for database initialization."""
     
-    # Remove existing database to ensure clean state
+    # Only create tables if database doesn't exist yet (preserve existing data)
     db_path = DATABASE_URL.replace("sqlite:///", "")
-    if os.path.exists(db_path):
-        os.remove(db_path)
-    
-    # Create all tables at once using SQLModel
-    SQLModel.metadata.create_all(engine)
+    if not os.path.exists(db_path):
+        SQLModel.metadata.create_all(engine)
+        print("✅ Database initialized")
+    else:
+        print("📁 Database already exists - preserving data")
     
     print("✅ Database initialized")
     yield
@@ -48,10 +48,13 @@ app = FastAPI(
     lifespan=lifespan
 )
 
-# Mount static files for frontend
-frontend_path = os.path.join(os.path.dirname(__file__), "..", "frontend")
-if os.path.exists(frontend_path):
-    app.mount("/static", StaticFiles(directory=frontend_path), name="static")
+# Mount static files for frontend - serve from frontend/static/ not frontend/
+frontend_static_path = os.path.join(os.path.dirname(__file__), "..", "frontend", "static")
+if os.path.exists(frontend_static_path):
+    print(f"✅ Mounting static files from {frontend_static_path} to /static")
+    app.mount("/static", StaticFiles(directory=frontend_static_path), name="static")
+else:
+    print(f"❌ Static files not found at {frontend_static_path}")
 
 
 # Pydantic models for request/response validation
@@ -96,10 +99,17 @@ class ExecutionLogCreate(BaseModel):
 @app.get("/", response_class=HTMLResponse)
 async def serve_index():
     """Serve the Agent Board frontend."""
-    if os.path.exists(frontend_path):
-        index_file = os.path.join(frontend_path, "index.html")
-        with open(index_file, "r") as f:
-            return HTMLResponse(content=f.read())
+    # Try static directory first, then parent directory (for index.html location compatibility)
+    candidates = [
+        os.path.join(frontend_static_path, "index.html"),  # /frontend/static/index.html
+        os.path.join(os.path.dirname(frontend_static_path), "index.html")  # /frontend/index.html
+    ]
+    
+    for index_file in candidates:
+        if os.path.exists(index_file):
+            with open(index_file, "r") as f:
+                return HTMLResponse(content=f.read())
+    
     return HTMLResponse(content="<h1>Agent Board</h1><p>Frontend not found.</p>")
 
 

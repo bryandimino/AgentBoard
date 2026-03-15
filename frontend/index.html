@@ -135,17 +135,17 @@
             <div class="modal-content">
                 <h2 id="modal-title">Create New Card</h2>
                 <form id="card-form" onsubmit="handleCardSubmit(event)">
-                    <input type="hidden" id="card-id">
+                    <input type="hidden" id="card-id" name="id">
                     
                     <div class="form-group">
                         <label for="card-title">Title *</label>
-                        <input type="text" id="card-title" required placeholder="What needs to be done?" minlength="1" maxlength="200">
+                        <input type="text" id="card-title" name="title" required placeholder="What needs to be done?" minlength="1" maxlength="200">
                     </div>
 
                     <div class="form-row">
                         <div class="form-group">
                             <label for="card-type">Type</label>
-                            <select id="card-type">
+                            <select id="card-type" name="type">
                                 <option value="task">Task</option>
                                 <option value="feature">Feature</option>
                                 <option value="bug">Bug</option>
@@ -155,7 +155,7 @@
 
                         <div class="form-group">
                             <label for="card-priority">Priority</label>
-                            <select id="card-priority">
+                            <select id="card-priority" name="priority">
                                 <option value="0">Critical (P0)</option>
                                 <option value="1" selected>High (P1)</option>
                                 <option value="2">Medium (P2)</option>
@@ -167,12 +167,12 @@
                     <div class="form-row">
                         <div class="form-group">
                             <label for="card-owner">Owner</label>
-                            <input type="text" id="card-owner" placeholder="Agent ID or person name">
+                            <input type="text" id="card-owner" name="owner" placeholder="Agent ID or person name">
                         </div>
 
                         <div class="form-group">
                             <label for="card-status">Status</label>
-                            <select id="card-status">
+                            <select id="card-status" name="status">
                                 <option value="BACKLOG">Backlog</option>
                                 <option value="READY" selected>Ready</option>
                                 <option value="IN_PROGRESS">In Progress</option>
@@ -185,23 +185,23 @@
 
                     <div class="form-group">
                         <label for="card-role">Role</label>
-                        <input type="text" id="card-role" placeholder="Primary coder, reviewer, etc.">
+                        <input type="text" id="card-role" name="role" placeholder="Primary coder, reviewer, etc.">
                     </div>
 
                     <div class="form-group">
                         <label for="card-acceptance">Acceptance Criteria *</label>
-                        <textarea id="card-acceptance" required placeholder="List the acceptance criteria for this work..." rows="4" minlength="1"></textarea>
+                        <textarea id="card-acceptance" name="acceptance_criteria" required placeholder="List the acceptance criteria for this work..." rows="4" minlength="1"></textarea>
                         <small class="field-hint">Markdown supported. Define what "done" looks like.</small>
                     </div>
 
                     <div class="form-group">
                         <label for="card-next-step">Next Step</label>
-                        <textarea id="card-next-step" placeholder="What should be done next? (optional)" rows="2"></textarea>
+                        <textarea id="card-next-step" name="next_step" placeholder="What should be done next? (optional)" rows="2"></textarea>
                     </div>
 
                     <div class="form-group">
                         <label for="card-blockers">Blockers</label>
-                        <textarea id="card-blockers" placeholder="What's blocking progress? (optional)" rows="2"></textarea>
+                        <textarea id="card-blockers" name="blockers" placeholder="What's blocking progress? (optional)" rows="2"></textarea>
                     </div>
 
                     <div class="form-actions">
@@ -218,7 +218,7 @@
     <div class="toast-container" id="toast-container"></div>
 
     <!-- Scripts -->
-    <script src="static/js/api.js"></script>
-    <script src="static/js/app.js"></script>
+    <script src="static/js/api.js?v=2026031501"></script>
+    <script src="static/js/app.js?v=2026031501"></script>
 </body>
 </html>
